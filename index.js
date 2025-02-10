@@ -17,6 +17,7 @@ app.use(express.json());
 app.get('/products',verifyToken, async (req, res) => {
   try {
     const products = await Product.findAll({
+      where: { status: 1 },
       include: [
         { model: Category, attributes: ['title'], required: false },
         { model: Brand, attributes: ['brandname'], required: false },
