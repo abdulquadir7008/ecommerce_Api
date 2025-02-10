@@ -2,7 +2,7 @@ const express = require('express');
 require('dotenv').config();
 const cors = require('cors');
 require('./include/dbconnect');
-const { Product, Category, Brand } = require('./model');
+const { Product, Category, Brand, Variant} = require('./model');
 const sgMail = require('@sendgrid/mail');
 const Jwt = require('jsonwebtoken');
 const PORT = process.env.PORT || 3000;
@@ -20,9 +20,30 @@ app.get('/products',verifyToken, async (req, res) => {
       include: [
         { model: Category, attributes: ['title'], required: false },
         { model: Brand, attributes: ['brandname'], required: false },
+        { model: Variant, attributes: ['vlist'], required: false },
       ],
     });
     res.json(products);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).send({ error: 'Internal Server Error' });
+  }
+});
+
+app.get('/products/:id', verifyToken, async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const product = await Product.findByPk(productId, {
+      include: [
+        { model: Category, attributes: ['title'], required: false },
+        { model: Brand, attributes: ['brandname'], required: false },
+        { model: Variant, attributes: ['vlist'], required: false },
+      ],
+    });
+    if (!product) {
+      return res.status(404).send({ error: 'Product not found' });
+    }
+    res.json(product);
   } catch (error) {
     console.error('Error:', error);
     res.status(500).send({ error: 'Internal Server Error' });
